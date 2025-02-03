@@ -151,3 +151,12 @@ Hybrid Types используются для описания объектов,
    type ID = string | number; // возможно
    /*** interface ID = string | number; // ошибка
    ```
+
+### Типы Assertions
+
+Type assertions позволяют разработчику явно указать тип переменной. Это может быть полезно, но следует избегать их чрезмерного использования, так как это обходит систему типов и может привести к ошибкам.
+
+```
+let someValue: any = "this is a string";
+let strLength: number = (someValue as string).length; // Пример использования type assertion
+```
