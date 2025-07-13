@@ -1,3 +1,157 @@
+Хук `useRef` в React используется для создания **мутабельного контейнера**, который **сохраняет значение между рендерами** без его инициирования нового рендера при изменении. Ниже — кейсы использования и объяснение, как работает ререндер.
+
+---
+
+## 📌 **Кейсы использования `useRef`**
+
+### 1. **Доступ к DOM-элементу**
+
+```tsx
+const InputFocus = () => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleClick = () => {
+    inputRef.current?.focus();
+  };
+
+  return (
+    <>
+      <input ref={inputRef} />
+      <button onClick={handleClick}>Фокус</button>
+    </>
+  );
+};
+```
+
+**Зачем:** доступ к реальному DOM-элементу (фокус, прокрутка, измерения и т.д.).
+
+---
+
+### 2. **Хранение предыдущего значения**
+
+```tsx
+const PreviousValue = ({ value }: { value: number }) => {
+  const prevValue = useRef<number>();
+
+  useEffect(() => {
+    prevValue.current = value;
+  }, [value]);
+
+  return <div>Предыдущее значение: {prevValue.current}</div>;
+};
+```
+
+**Зачем:** отслеживание предыдущих props/state без их включения в ререндер.
+
+---
+
+### 3. **Хранение интервалов/таймеров**
+
+```tsx
+const Timer = () => {
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startTimer = () => {
+    timerRef.current = setInterval(() => {
+      console.log("tick");
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
+  return (
+    <>
+      <button onClick={startTimer}>Старт</button>
+      <button onClick={stopTimer}>Стоп</button>
+    </>
+  );
+};
+```
+
+**Зачем:** хранение ID таймера вне рендера.
+
+---
+
+### 4. **Избежание повторного вызова функции**
+
+```tsx
+const Example = () => {
+  const hasMounted = useRef(false);
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+    console.log("Компонент обновился (не монтирование)");
+  }, []);
+};
+```
+
+**Зачем:** выполнение логики только после первого рендера или исключение кода при первом запуске.
+
+---
+
+### 5. **Доступ к методам из `child` через `forwardRef`**
+
+```tsx
+const Input = forwardRef((props, ref) => <input {...props} ref={ref} />);
+
+const Parent = () => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const focusInput = () => {
+    inputRef.current?.focus();
+  };
+
+  return (
+    <>
+      <Input ref={inputRef} />
+      <button onClick={focusInput}>Фокус</button>
+    </>
+  );
+};
+```
+
+**Зачем:** передача рефа в дочерний компонент для управления.
+
+---
+
+## 🔄 Как работает **ререндер** в React
+
+1. **Компонент ререндерится, когда:**
+
+   - Изменяются его `props`
+   - Изменяется `state` через `useState` или `useReducer`
+   - Его родитель ререндерится (в большинстве случаев)
+
+2. **Что НЕ вызывает ререндер:**
+
+   - Изменение `.current` у объекта `useRef`
+   - Вызов `console.log`, `setTimeout`, мутации вне `state`
+   - Прямое изменение переменных, которые не участвуют в `state`
+
+```tsx
+const Example = () => {
+  const countRef = useRef(0);
+
+  const handleClick = () => {
+    countRef.current += 1;
+    console.log(countRef.current); // изменится, но ререндер НЕ произойдёт
+  };
+
+  return <button onClick={handleClick}>Клик</button>;
+};
+```
+
+---
+
+## ⚠️ Главное правило
+
+`useRef` — это **контейнер**, не участвующий в реактивности. Меняя `.current`, вы **не триггерите** новый ререндер. Это делает его идеальным для хранения «побочных» данных — состояний, которые не должны вызывать обновление UI.
+
 ### React
 
 #### Что такое React?
